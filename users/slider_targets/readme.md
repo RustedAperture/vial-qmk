@@ -14,12 +14,24 @@ tab in [RustedAperture/vial-gui `key-colours`](https://github.com/RustedAperture
 Like the rest of Vial's saved settings, the targets are reset the first time a newly built firmware boots.
 The app saves them in `.vil` layout files, so restoring a layout restores them too.
 
+## Configuration
+Define these in the keymap's `config.h` (the core uses `#ifndef` defaults):
+- `ST_ADC_MIN` (default 0) and `ST_ADC_MAX` (default 1023): raw ADC counts at the slider's bottom and top.
+  `st_scale` maps this range linearly to 0..127 (with rounding); readings within `ST_HYSTERESIS` of either end,
+  or beyond it, send exactly 0 or 127.
+- `ST_HYSTERESIS` (default 6): raw counts a reading must move before it is considered.
+
+To calibrate, record the MIDI values while moving the slider fully down and up a few times. If they never
+reach 0 or 127, find the raw readings at each end. Set `ST_ADC_MIN` a few counts above the highest bottom
+reading and `ST_ADC_MAX` a few counts below the lowest top reading, so both ends reliably reach the end
+zones. The numpad uses 16 and 940 (bottom read about 7-12, top about 947-954).
+
 ## Files
 - `slider_targets_core.{h,c}`: storage, raw HID protocol, next-target and flash timing, slider scaling with
   hysteresis. Plain C with no QMK dependencies, unit-tested on the host.
 - `slider_targets.{h,c}`: QMK glue (keyboard EEPROM datablock, `eeconfig_init_kb_datablock`, slider
   reading and MIDI, flash rendering).
-- `test/`: host tests for the core.
+- `test/`: host tests for the core, built with the default range and with the numpad's calibrated range.
 
 ## Using it in a keymap
 Needs MIDI (`MIDI_ADVANCED`), `SLIDER_PIN`, VIA/Vial, and `users/key_colours` (for raw HID and rendering).

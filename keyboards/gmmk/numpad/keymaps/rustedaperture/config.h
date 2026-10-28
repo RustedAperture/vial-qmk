@@ -23,3 +23,8 @@
 /* Bump the high part (0x5354xxxx) when st_store_t changes */
 #define EECONFIG_KB_DATA_VERSION (0x53540000 | 130)
 #define SLIDER_TARGETS_FLASH_LEDS { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 }
+
+/* Slider ADC range, calibrated from recorded MIDI on 2026-10-28 (bottom read ~7-12, top ~947-954).
+ * Chosen with margin so both ends reliably reach 0 and 127. */
+#define ST_ADC_MIN 16
+#define ST_ADC_MAX 940

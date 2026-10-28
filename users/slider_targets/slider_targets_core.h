@@ -16,6 +16,10 @@
 #define ST_NAME_MAX 12
 #define ST_FLASH_MS 1000
 
+// Raw ADC counts at the slider's two ends; see readme.md for calibration.
+#ifndef ST_ADC_MIN
+#    define ST_ADC_MIN 0
+#endif
 #ifndef ST_ADC_MAX
 #    define ST_ADC_MAX 1023
 #endif
@@ -23,6 +27,8 @@
 #ifndef ST_HYSTERESIS
 #    define ST_HYSTERESIS 6
 #endif
+
+_Static_assert(ST_ADC_MAX > ST_ADC_MIN + 2 * ST_HYSTERESIS, "ADC range must be wider than the end zones");
 
 typedef struct __attribute__((packed)) {
     uint8_t control; // 0-127

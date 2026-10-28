@@ -102,7 +102,10 @@ bool st_flash_active(st_runtime_t *rt, uint32_t now) {
 }
 
 uint8_t st_scale(uint16_t raw) {
-    uint32_t v = ((uint32_t)raw * 127 + ST_ADC_MAX / 2) / ST_ADC_MAX;
+    if (raw <= ST_ADC_MIN) return 0;
+    if (raw >= ST_ADC_MAX) return 127;
+    uint32_t span = ST_ADC_MAX - ST_ADC_MIN;
+    uint32_t v    = ((uint32_t)(raw - ST_ADC_MIN) * 127 + span / 2) / span;
     return v > 127 ? 127 : (uint8_t)v;
 }
 
@@ -114,7 +117,7 @@ bool st_slider_update(st_runtime_t *rt, uint16_t raw, uint8_t *value) {
         return false;
     }
     uint8_t v;
-    if (raw <= ST_HYSTERESIS) {
+    if (raw <= ST_ADC_MIN + ST_HYSTERESIS) {
         v = 0;
     } else if (raw >= ST_ADC_MAX - ST_HYSTERESIS) {
         v = 127;
