@@ -13,6 +13,18 @@
 #endif
 _Static_assert(KEY_COLOURS_LEDS <= 192, "dirty mask is 32 chunks of 6 LEDs");
 
+/* Per-channel LED balance (0-255) applied after gamma, so a white key looks white.
+   Calibrate per board by eye; 255 means unchanged. */
+#ifndef KEY_COLOURS_BALANCE_R
+#define KEY_COLOURS_BALANCE_R 255
+#endif
+#ifndef KEY_COLOURS_BALANCE_G
+#define KEY_COLOURS_BALANCE_G 255
+#endif
+#ifndef KEY_COLOURS_BALANCE_B
+#define KEY_COLOURS_BALANCE_B 255
+#endif
+
 #define KEY_COLOURS_CMD 0x55
 #define KC_GET_INFO 0x01
 #define KC_GET 0x02
@@ -56,6 +68,8 @@ bool     kc_handle_hid(kc_store_t *s, kc_runtime_t *rt, uint8_t *data, uint8_t l
 void     kc_set_preview(kc_runtime_t *rt, uint8_t layer, uint32_t now);
 uint8_t  kc_display_layer(const kc_runtime_t *rt, uint8_t active_layer, uint32_t now);
 kc_rgb_t kc_scale(kc_rgb_t c, uint8_t val);
+uint8_t  kc_gamma(uint8_t v);                // screen (sRGB-ish, gamma 2.2) value -> linear LED value
+kc_rgb_t kc_to_led(kc_rgb_t c, uint8_t val); // gamma, then channel balance, then brightness
 void     kc_mark_dirty(kc_runtime_t *rt, uint8_t layer, uint8_t start, uint8_t count);
 void     kc_mark_all_dirty(kc_runtime_t *rt);
 bool     kc_next_dirty_chunk(kc_runtime_t *rt, uint8_t *layer, uint8_t *start, uint8_t *count);

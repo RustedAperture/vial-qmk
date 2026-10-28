@@ -1,5 +1,5 @@
 CC ?= gcc
-CFLAGS = -std=c11 -DKEY_COLOURS_LAYERS=2 -DKEY_COLOURS_LEDS=14 -Wall -Wextra -Werror -I..
+CFLAGS = -std=c11 -DKEY_COLOURS_LAYERS=2 -DKEY_COLOURS_LEDS=14 -DKEY_COLOURS_BALANCE_G=140 -DKEY_COLOURS_BALANCE_B=95 -Wall -Wextra -Werror -I..
 
 .PHONY: all clean
 all: test_core

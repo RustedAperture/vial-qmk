@@ -18,6 +18,10 @@
 /* Per-key, per-layer colours (users/key_colours) */
 #define KEY_COLOURS_LAYERS 4
 #define KEY_COLOURS_LEDS 58
+/* LED balance calibrated by eye on 2026-10-28: green and blue LEDs are brighter than red */
+#define KEY_COLOURS_BALANCE_R 255
+#define KEY_COLOURS_BALANCE_G 140
+#define KEY_COLOURS_BALANCE_B 95
 #define EECONFIG_USER_DATA_SIZE 729          /* 1 + 4*8 + 4*58*3 */
 /* Format version follows the counts; bump the high part (0x4B43xxxx) when kc_store_t changes */
 #define EECONFIG_USER_DATA_VERSION (0x4B430000 | (KEY_COLOURS_LAYERS << 8) | KEY_COLOURS_LEDS)

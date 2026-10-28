@@ -136,7 +136,7 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     for (uint8_t i = led_min; i < led_max && i < KEY_COLOURS_LEDS; i++) {
         kc_rgb_t c;
         if (kc_get(&kc_store, layer, i, &c)) {
-            kc_rgb_t s = kc_scale(c, val);
+            kc_rgb_t s = kc_to_led(c, val);
             rgb_matrix_set_color(i, s.r, s.g, s.b);
         }
     }

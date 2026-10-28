@@ -110,6 +110,25 @@ static void test_scale(void) {
     assert(eq(kc_scale(rgb(255, 128, 7), 0), rgb(0, 0, 0)));
 }
 
+static void test_gamma(void) {
+    assert(kc_gamma(0) == 0);
+    assert(kc_gamma(255) == 255);
+    assert(kc_gamma(128) == 56);
+    assert(kc_gamma(200) == 149);
+    assert(kc_gamma(83) == 22);
+    assert(kc_gamma(1) == 0);
+    assert(kc_gamma(254) == 253);
+}
+
+/* test build sets KEY_COLOURS_BALANCE_G=140, KEY_COLOURS_BALANCE_B=95 (red defaults to 255) */
+static void test_to_led(void) {
+    assert(eq(kc_to_led(rgb(255, 255, 255), 255), rgb(255, 140, 95)));
+    assert(eq(kc_to_led(rgb(0, 200, 83), 255), rgb(0, 81, 8)));
+    assert(eq(kc_to_led(rgb(255, 23, 68), 255), rgb(255, 0, 5)));
+    assert(eq(kc_to_led(rgb(255, 255, 255), 127), rgb(127, 69, 47)));
+    assert(eq(kc_to_led(rgb(255, 255, 255), 0), rgb(0, 0, 0)));
+}
+
 static void test_dirty_chunks(void) {
     kc_runtime_t rt; uint8_t l, st, n;
     kc_runtime_init(&rt);
@@ -136,6 +155,8 @@ int main(void) {
     test_unknown_command_not_handled();
     test_preview_expires();
     test_scale();
+    test_gamma();
+    test_to_led();
     test_dirty_chunks();
     puts("all core tests passed");
     return 0;
