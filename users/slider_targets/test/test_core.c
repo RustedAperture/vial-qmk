@@ -162,17 +162,23 @@ static void test_slider(void) {
     assert(v == st_scale(520));
     assert(!st_slider_update(&rt, 520, &v));
     assert(!st_slider_update(&rt, 523, &v));
-    // ends reachable from inside the hysteresis band
+    // end zones: reach 0 and 127 from inside the hysteresis band
     st_runtime_init(&rt);
-    assert(!st_slider_update(&rt, 1000, &v));
-    assert(st_slider_update(&rt, 1017, &v) && v == st_scale(1017) && v != 127);
+    assert(!st_slider_update(&rt, 5, &v)); // primes
+    assert(st_slider_update(&rt, 2, &v) && v == 0);
+    assert(!st_slider_update(&rt, 0, &v)); // already 0
+    assert(!st_slider_update(&rt, 3, &v));
+    st_runtime_init(&rt);
+    assert(!st_slider_update(&rt, 1015, &v)); // primes
+    assert(st_slider_update(&rt, 1019, &v) && v == 127);
+    assert(!st_slider_update(&rt, 1023, &v)); // repeated end readings send nothing
     assert(!st_slider_update(&rt, 1020, &v));
-    assert(st_slider_update(&rt, 1023, &v) && v == 127);
-    assert(!st_slider_update(&rt, 1023, &v));
+    // leaving the end zone works normally
+    assert(st_slider_update(&rt, 900, &v) && v == st_scale(900));
     st_runtime_init(&rt);
-    st_runtime_init(&rt);
-    assert(!st_slider_update(&rt, 10, &v));
-    assert(st_slider_update(&rt, 0, &v) && v == 0);
+    assert(!st_slider_update(&rt, 20, &v));
+    assert(st_slider_update(&rt, 7, &v) && v == st_scale(7));
+    assert(st_slider_update(&rt, 3, &v) && v == 0);
 }
 
 int main(void) {

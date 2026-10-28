@@ -113,11 +113,17 @@ bool st_slider_update(st_runtime_t *rt, uint16_t raw, uint8_t *value) {
         rt->have_value = true;
         return false;
     }
-    uint16_t diff = raw > rt->last_raw ? raw - rt->last_raw : rt->last_raw - raw;
-    bool     end  = raw == 0 || raw >= ST_ADC_MAX;
-    if (diff < ST_HYSTERESIS && !(end && diff > 0)) return false;
-    rt->last_raw  = raw;
-    uint8_t v     = end ? (raw == 0 ? 0 : 127) : st_scale(raw);
+    uint8_t v;
+    if (raw <= ST_HYSTERESIS) {
+        v = 0;
+    } else if (raw >= ST_ADC_MAX - ST_HYSTERESIS) {
+        v = 127;
+    } else {
+        uint16_t diff = raw > rt->last_raw ? raw - rt->last_raw : rt->last_raw - raw;
+        if (diff < ST_HYSTERESIS) return false;
+        v = st_scale(raw);
+    }
+    rt->last_raw = raw;
     if (v == rt->last_value) return false;
     rt->last_value = v;
     *value         = v;
