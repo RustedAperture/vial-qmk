@@ -94,8 +94,11 @@ void st_next(st_store_t *s, st_runtime_t *rt, uint32_t now) {
     rt->flash_until = now + ST_FLASH_MS;
 }
 
-bool st_flash_active(const st_runtime_t *rt, uint32_t now) {
-    return rt->flashing && (int32_t)(now - rt->flash_until) < 0;
+bool st_flash_active(st_runtime_t *rt, uint32_t now) {
+    if (!rt->flashing) return false;
+    if ((int32_t)(now - rt->flash_until) < 0) return true;
+    rt->flashing = false;
+    return false;
 }
 
 uint8_t st_scale(uint16_t raw) {

@@ -59,6 +59,8 @@ bool    st_store_valid(const st_store_t *s);
 void    st_runtime_init(st_runtime_t *rt);
 bool    st_handle_hid(st_store_t *s, uint8_t *data, uint8_t length, st_change_t *change);
 void    st_next(st_store_t *s, st_runtime_t *rt, uint32_t now);
-bool    st_flash_active(const st_runtime_t *rt, uint32_t now);
+// True while the flash from the last st_next is showing. Clears rt->flashing once it has expired,
+// so it stays false (even after the 32-bit timer wraps) until the next st_next.
+bool    st_flash_active(st_runtime_t *rt, uint32_t now);
 uint8_t st_scale(uint16_t raw);
 bool    st_slider_update(st_runtime_t *rt, uint16_t raw, uint8_t *value);

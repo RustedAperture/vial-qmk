@@ -129,6 +129,19 @@ static void test_next_flash(void) {
     assert(s.current == 0 && st_flash_active(&rt, 5));
 }
 
+// once expired, the flash stays off even when the timer comes back round 2^31 ms later
+static void test_flash_stays_off(void) {
+    st_store_t s;
+    st_runtime_t rt;
+    st_store_default(&s);
+    st_runtime_init(&rt);
+    st_next(&s, &rt, 1000);
+    assert(st_flash_active(&rt, 1999));
+    assert(!st_flash_active(&rt, 2000));
+    assert(!st_flash_active(&rt, 1000u + 0x80000000u + 5u));
+    assert(!st_flash_active(&rt, 2000u + 0x80000000u + 5u)); // 2^31 ms past the end: the old check said true
+}
+
 static void test_scale(void) {
     assert(st_scale(0) == 0);
     assert(st_scale(1023) == 127);
@@ -168,6 +181,7 @@ int main(void) {
     test_bad_args();
     test_count_resets_current();
     test_next_flash();
+    test_flash_stays_off();
     test_scale();
     test_slider();
     puts("all slider core tests passed");
