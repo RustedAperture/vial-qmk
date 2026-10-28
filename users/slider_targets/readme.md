@@ -6,8 +6,8 @@ tab in [RustedAperture/vial-gui `key-colours`](https://github.com/RustedAperture
 - Up to 8 targets, each with a MIDI control number (0-127), a colour and a name (up to 12 ASCII characters).
 - The slider sends MIDI CC on channel index 2 to the current target's control. It is read every 10 ms;
   small jitter is ignored, and the bottom and top few counts always resolve to 0 and 127.
-- The `SLIDER_NEXT` key (`QK_KB_0`) moves to the next target, wrapping round, and flashes the side LEDs in
-  that target's colour for 1 s. Pressing it again during the flash restarts it with the new colour.
+- The `SLIDER_NEXT` key (`QK_KB_0`) moves to the next target, wrapping round, and flashes LEDs in
+  that target's colour for 1 s (the LEDs listed in `SLIDER_TARGETS_FLASH_LEDS`; the numpad flashes all of them). Pressing it again during the flash restarts it with the new colour.
 - The current target is remembered across power cycles.
 - Default list: one target, control 62, named "Slider", white.
 
