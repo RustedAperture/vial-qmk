@@ -1,0 +1,9 @@
+{
+    "config": {
+        "eeprom": {
+            "wear_leveling": {
+                "backing_size": 8192
+            }
+        }
+    }
+}
