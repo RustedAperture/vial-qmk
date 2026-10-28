@@ -3,6 +3,9 @@
   "vendorId": "0x320F",
   "productId": "0x5088",
   "lighting": "vialrgb",
+  "customKeycodes": [
+    {"name": "SLIDER_NEXT", "title": "Next slider target", "shortName": "Slider\nNext"}
+  ],
   "matrix": {
     "rows": 5,
     "cols": 4

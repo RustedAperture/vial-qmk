@@ -16,8 +16,8 @@
  */
 
 #include QMK_KEYBOARD_H
-#include "analog.h"
-#include "qmk_midi.h"
+#include "key_colours.h"
+#include "slider_targets.h"
 
 /* Tap dances TD(0)-TD(6) are Vial tap dances; set them up in Vial (or load the layout file). */
 
@@ -39,7 +39,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
   [1] = LAYOUT(
     _______,   TO(2),     TO(3),     KC_F17,
-    KC_NO,     TD(4),     KC_F16,    KC_F18,
+    QK_KB_0,   TD(4),     KC_F16,    KC_F18,
     KC_MPRV,   KC_MPLY,   KC_MNXT,   KC_CALC,
     QK_BOOT,   KC_NO,     KC_NO,     KC_NO,
     RM_TOGG,                         KC_NO
@@ -68,17 +68,20 @@ const uint16_t PROGMEM encoder_map[][NUM_ENCODERS][NUM_DIRECTIONS] = {
 };
 // clang-format on
 
-// Potentiometer Slider, MIDI Control
-
-uint8_t divisor = 0;
-
-void slider(void) {
-    if (divisor++) { /* only run the slider function 1/256 times it's called */
-        return;
-    }
-    midi_send_cc(&midi_device, 2, 0x3E, 0x7F + (analogReadPin(SLIDER_PIN) >> 3));
-}
+// Slider: MIDI CC to the current target (users/slider_targets); QK_KB_0 (SLIDER_NEXT) picks the next one.
 
 void housekeeping_task_user(void) {
-    slider();
+    slider_targets_task();
+}
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    return slider_targets_process_record(keycode, record);
+}
+
+bool key_colours_raw_hid_user(uint8_t *data, uint8_t length) {
+    return slider_targets_raw_hid(data, length);
+}
+
+void key_colours_render_user(uint8_t led_min, uint8_t led_max) {
+    slider_targets_render(led_min, led_max);
 }

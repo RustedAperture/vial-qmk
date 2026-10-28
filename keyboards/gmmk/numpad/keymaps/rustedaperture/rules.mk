@@ -5,3 +5,6 @@ ENCODER_MAP_ENABLE = yes
 
 VPATH += $(TOP_DIR)/users/key_colours
 SRC += key_colours_core.c key_colours.c
+
+VPATH += $(TOP_DIR)/users/slider_targets
+SRC += slider_targets_core.c slider_targets.c

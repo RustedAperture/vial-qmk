@@ -17,3 +17,9 @@
 #define EECONFIG_USER_DATA_SIZE 389          /* 1 + 4*4 + 4*31*3 */
 /* Format version follows the counts; bump the high part (0x4B43xxxx) when kc_store_t changes */
 #define EECONFIG_USER_DATA_VERSION (0x4B430000 | (KEY_COLOURS_LAYERS << 8) | KEY_COLOURS_LEDS)
+
+/* Slider MIDI targets (users/slider_targets) */
+#define EECONFIG_KB_DATA_SIZE 130            /* sizeof(st_store_t) */
+/* Bump the high part (0x5354xxxx) when st_store_t changes */
+#define EECONFIG_KB_DATA_VERSION (0x53540000 | 130)
+#define SLIDER_TARGETS_FLASH_LEDS { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 }
