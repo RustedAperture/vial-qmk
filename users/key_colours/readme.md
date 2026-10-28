@@ -42,6 +42,15 @@ Needs VIA/Vial and VialRGB (`VIALRGB_ENABLE = yes`). The keymap must not define 
 
 Static asserts catch a wrong size or count at compile time.
 
+### Hooks for other modules
+Define these in your keymap or another module (weak defaults exist; declared in `key_colours.h`):
+
+- `bool key_colours_raw_hid_user(uint8_t *data, uint8_t length)`: called for raw HID packets key_colours does not handle.
+  Return true if you handled it (reply in place in `data`); if false, `data[0]` is set to `id_unhandled`.
+- `void key_colours_render_user(uint8_t led_min, uint8_t led_max)`: called at the end of each
+  `rgb_matrix_indicators_advanced_user` call, after the key colours, so you can draw on top.
+- `kc_rgb_t key_colours_to_led(kc_rgb_t c)`: converts a colour with the same gamma, balance and brightness as the key colours.
+
 ### LED colour balance
 Many WS2812 LEDs have brighter green and blue than red, so whites look blue and yellows look lime.
 Set per-channel balance (0-255, default 255) in `config.h`:

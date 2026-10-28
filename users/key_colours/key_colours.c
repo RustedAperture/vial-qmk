@@ -41,10 +41,16 @@ static void kc_save_change(const kc_change_t *ch) {
 
 // ---- Raw HID ----
 
+__attribute__((weak)) bool key_colours_raw_hid_user(uint8_t *data, uint8_t length) {
+    (void)data;
+    (void)length;
+    return false;
+}
+
 void raw_hid_receive_kb(uint8_t *data, uint8_t length) {
     kc_change_t ch;
     if (!kc_handle_hid(&kc_store, &kc_rt, data, length, timer_read32(), &ch)) {
-        data[0] = id_unhandled;
+        if (!key_colours_raw_hid_user(data, length)) data[0] = id_unhandled;
         return;
     }
     if (ch.store_changed) kc_save_change(&ch);
@@ -142,15 +148,24 @@ void housekeeping_task_user(void) {
 }
 #endif
 
+kc_rgb_t key_colours_to_led(kc_rgb_t c) {
+    return kc_to_led(c, rgb_matrix_get_val());
+}
+
+__attribute__((weak)) void key_colours_render_user(uint8_t led_min, uint8_t led_max) {
+    (void)led_min;
+    (void)led_max;
+}
+
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     uint8_t layer = kc_display_layer(&kc_rt, get_highest_layer(layer_state | default_layer_state), timer_read32());
-    uint8_t val   = rgb_matrix_get_val();
     for (uint8_t i = led_min; i < led_max && i < KEY_COLOURS_LEDS; i++) {
         kc_rgb_t c;
         if (kc_get(&kc_store, layer, i, &c)) {
-            kc_rgb_t s = kc_to_led(c, val);
+            kc_rgb_t s = key_colours_to_led(c);
             rgb_matrix_set_color(i, s.r, s.g, s.b);
         }
     }
+    key_colours_render_user(led_min, led_max);
     return false;
 }
