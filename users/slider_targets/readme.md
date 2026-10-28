@@ -7,7 +7,7 @@ tab in [RustedAperture/vial-gui `key-colours`](https://github.com/RustedAperture
 - The slider sends MIDI CC on channel index 2 to the current target's control. It is read every 10 ms;
   small jitter is ignored, and the bottom and top few counts always resolve to 0 and 127.
 - The `SLIDER_NEXT` key (`QK_KB_0`) moves to the next target, wrapping round, and flashes LEDs in
-  that target's colour for 1 s (the LEDs listed in `SLIDER_TARGETS_FLASH_LEDS`; the numpad flashes all of them). Pressing it again during the flash restarts it with the new colour.
+  that target's colour for 1 s. Which LEDs flash is a 32-bit mask (bit i = LED i, shared by all targets) set from the Slider tab; the default is `ST_DEFAULT_FLASH_MASK`. Pressing it again during the flash restarts it with the new colour.
 - The current target is remembered across power cycles.
 - Default list: one target, control 62, named "Slider", white.
 
@@ -20,6 +20,7 @@ Define these in the keymap's `config.h` (the core uses `#ifndef` defaults):
   `st_scale` maps this range linearly to 0..127 (with rounding); readings within `ST_HYSTERESIS` of either end,
   or beyond it, send exactly 0 or 127.
 - `ST_HYSTERESIS` (default 6): raw counts a reading must move before it is considered.
+- `ST_DEFAULT_FLASH_MASK` (default `0xFFFFFFFF`): flash mask after a reset; bit i = LED i. The numpad uses `0x7FFFFFFF` (all 31 LEDs). The LED count must be at most 32.
 
 To calibrate, record the MIDI values while moving the slider fully down and up a few times. If they never
 reach 0 or 127, find the raw readings at each end. Set `ST_ADC_MIN` a few counts above the highest bottom
@@ -57,9 +58,9 @@ The targets are loaded on the first call to any of these, so no `keyboard_post_i
 
 `config.h`:
 
-    #define EECONFIG_KB_DATA_SIZE 130            /* sizeof(st_store_t) */
-    #define EECONFIG_KB_DATA_VERSION (0x53540000 | 130)
-    #define SLIDER_TARGETS_FLASH_LEDS { 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 }
+    #define EECONFIG_KB_DATA_SIZE 134            /* sizeof(st_store_t) */
+    #define EECONFIG_KB_DATA_VERSION (0x53550000 | 134)
+    #define ST_DEFAULT_FLASH_MASK 0x7FFFFFFF     /* optional */
 
 A static assert catches a wrong size at compile time.
 
@@ -77,7 +78,7 @@ Declared in `slider_targets.h`:
   handled `SLIDER_NEXT` (on press; the release is swallowed too).
 - `bool slider_targets_raw_hid(uint8_t *data, uint8_t length)`: returns true if it handled the packet
   (reply in place in `data`).
-- `void slider_targets_render(uint8_t led_min, uint8_t led_max)`: paints the flash LEDs in that range
+- `void slider_targets_render(uint8_t led_min, uint8_t led_max)`: paints the LEDs in the flash mask, within that range,
   while the flash is showing, with `key_colours_to_led` (same gamma, balance and brightness as key colours).
 
 ## Raw HID protocol
@@ -86,10 +87,12 @@ Firmware without this module replies with byte 0 set to `0xFF`.
 
 | Sub | Name | Request | Reply |
 |---|---|---|---|
-| 0x01 | GET_INFO | | `[2]` version 1, `[3]` max targets 8, `[4]` count, `[5]` current index, `[6]` name max 12 |
+| 0x01 | GET_INFO | | `[2]` version 2, `[3]` max targets 8, `[4]` count, `[5]` current index, `[6]` name max 12 |
 | 0x02 | GET | `[2]` index (< count) | `[2]` index, `[3]` control, `[4..6]` r g b, `[7..18]` name (zero-padded) |
 | 0x03 | SET | `[2]` index (< 8), `[3]` control (0-127), `[4..6]` r g b, `[7..18]` name | request echoed |
 | 0x04 | SET_COUNT | `[2]` count 1-8 | request echoed; current index reset to 0 if past the end |
+| 0x05 | GET_FLASH | | `[2..5]` flash mask, little-endian (bit i = LED i) |
+| 0x06 | SET_FLASH | `[2..5]` flash mask, little-endian | request echoed; mask stored |
 
 To reorder, add or remove targets, write them with SET (the index may be past the current count), then
 SET_COUNT.

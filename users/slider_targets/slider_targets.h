@@ -12,5 +12,5 @@ void slider_targets_task(void);
 bool slider_targets_process_record(uint16_t keycode, keyrecord_t *record);
 // Call from key_colours_raw_hid_user (or raw_hid_receive_kb); returns true if handled (reply in place).
 bool slider_targets_raw_hid(uint8_t *data, uint8_t length);
-// Call from key_colours_render_user; paints SLIDER_TARGETS_FLASH_LEDS while the flash is showing.
+// Call from key_colours_render_user; paints the LEDs in the flash mask while the flash is showing.
 void slider_targets_render(uint8_t led_min, uint8_t led_max);

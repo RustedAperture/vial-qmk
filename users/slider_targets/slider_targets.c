@@ -11,7 +11,7 @@ _Static_assert(sizeof(st_store_t) == EECONFIG_KB_DATA_SIZE, "EECONFIG_KB_DATA_SI
 #define ST_SLIDER_INTERVAL_MS 10
 #define ST_MIDI_CHANNEL 2
 
-static const uint8_t st_flash_leds[] = SLIDER_TARGETS_FLASH_LEDS;
+_Static_assert(RGB_MATRIX_LED_COUNT <= 32, "flash_mask has one bit per LED");
 
 static st_store_t   st_store;
 static st_runtime_t st_rt;
@@ -40,7 +40,12 @@ static void st_save_header(void) {
     eeconfig_update_kb_datablock(&st_store, 0, offsetof(st_store_t, targets));
 }
 
+static void st_save_flash(void) {
+    eeconfig_update_kb_datablock(&st_store.flash_mask, offsetof(st_store_t, flash_mask), sizeof st_store.flash_mask);
+}
+
 static void st_save_change(const st_change_t *ch) {
+    if (ch->flash_changed) st_save_flash();
     if (ch->header_changed) st_save_header();
     if (ch->count) {
         eeconfig_update_kb_datablock(&st_store.targets[ch->first], offsetof(st_store_t, targets) + (uint32_t)ch->first * sizeof(st_target_t), (uint32_t)ch->count * sizeof(st_target_t));
@@ -83,8 +88,7 @@ void slider_targets_render(uint8_t led_min, uint8_t led_max) {
     if (!st_flash_active(&st_rt, timer_read32())) return;
     const st_target_t *t = &st_store.targets[st_store.current];
     kc_rgb_t           c = key_colours_to_led((kc_rgb_t){t->r, t->g, t->b});
-    for (uint8_t i = 0; i < sizeof st_flash_leds; i++) {
-        uint8_t led = st_flash_leds[i];
-        if (led >= led_min && led < led_max) rgb_matrix_set_color(led, c.r, c.g, c.b);
+    for (uint8_t led = led_min; led < led_max && led < 32; led++) {
+        if (st_store.flash_mask & (1UL << led)) rgb_matrix_set_color(led, c.r, c.g, c.b);
     }
 }

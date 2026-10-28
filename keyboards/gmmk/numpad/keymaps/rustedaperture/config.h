@@ -19,12 +19,12 @@
 #define EECONFIG_USER_DATA_VERSION (0x4B430000 | (KEY_COLOURS_LAYERS << 8) | KEY_COLOURS_LEDS)
 
 /* Slider MIDI targets (users/slider_targets) */
-#define EECONFIG_KB_DATA_SIZE 130            /* sizeof(st_store_t) */
-/* Bump the high part (0x5354xxxx) when st_store_t changes */
-#define EECONFIG_KB_DATA_VERSION (0x53540000 | 130)
-/* Flash every LED (keys 0-16 and both side strips 17-30) in the new target's colour */
-#define SLIDER_TARGETS_FLASH_LEDS { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, \
-                                    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 }
+#define EECONFIG_KB_DATA_SIZE 134            /* sizeof(st_store_t) */
+/* Bump the high part (0x5355xxxx) when st_store_t changes */
+#define EECONFIG_KB_DATA_VERSION (0x53550000 | 134)
+
+/* LEDs that flash on a target switch by default: bits 0-30 = keys 0-16 and both side strips 17-30 */
+#define ST_DEFAULT_FLASH_MASK 0x7FFFFFFF
 
 /* Slider ADC range, calibrated from recorded MIDI on 2026-10-28 (bottom read ~7-12, top ~947-954).
  * Chosen with margin so both ends reliably reach 0 and 127. */

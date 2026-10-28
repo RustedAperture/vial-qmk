@@ -15,6 +15,8 @@ static void test_default(void) {
     assert(s.targets[0].control == 62);
     assert(s.targets[0].r == 255 && s.targets[0].g == 255 && s.targets[0].b == 255);
     assert(memcmp(s.targets[0].name, "Slider\0\0\0\0\0\0", 12) == 0);
+    assert(s.flash_mask == ST_DEFAULT_FLASH_MASK && s.flash_mask == 0xFFFFFFFFu);
+    assert(sizeof(st_store_t) == 134 && offsetof(st_store_t, flash_mask) == 130);
     assert(st_store_valid(&s));
     s.count = 0;
     assert(!st_store_valid(&s));
@@ -38,7 +40,7 @@ static void test_protocol(void) {
 
     req(d, ST_GET_INFO);
     assert(st_handle_hid(&s, d, 32, &ch));
-    assert(d[2] == 1 && d[3] == 8 && d[4] == 1 && d[5] == 0 && d[6] == 12);
+    assert(d[2] == 2 && d[3] == 8 && d[4] == 1 && d[5] == 0 && d[6] == 12);
     assert(!ch.store_changed);
 
     d[0] = 0x55;
@@ -64,6 +66,39 @@ static void test_protocol(void) {
     assert(!ch.store_changed);
     assert(d[2] == 1 && d[3] == 7 && d[4] == 1 && d[5] == 2 && d[6] == 3);
     assert(memcmp(&d[7], "Reverb\0\0\0\0\0\0", 12) == 0);
+}
+
+static void test_flash(void) {
+    st_store_t s;
+    st_change_t ch;
+    uint8_t d[32];
+    st_store_default(&s);
+
+    req(d, ST_GET_FLASH);
+    assert(st_handle_hid(&s, d, 32, &ch));
+    assert(d[1] == ST_GET_FLASH && !ch.store_changed && !ch.flash_changed);
+    assert(d[2] == 0xFF && d[3] == 0xFF && d[4] == 0xFF && d[5] == 0xFF);
+
+    req(d, ST_SET_FLASH);
+    d[2] = 0x78; d[3] = 0x56; d[4] = 0x34; d[5] = 0x12;
+    assert(st_handle_hid(&s, d, 32, &ch));
+    assert(d[1] == ST_SET_FLASH && d[2] == 0x78 && d[5] == 0x12);
+    assert(s.flash_mask == 0x12345678u);
+    assert(ch.store_changed && ch.flash_changed && !ch.header_changed && ch.count == 0);
+
+    req(d, ST_GET_FLASH);
+    assert(st_handle_hid(&s, d, 32, &ch));
+    assert(d[2] == 0x78 && d[3] == 0x56 && d[4] == 0x34 && d[5] == 0x12);
+    assert(!ch.flash_changed);
+
+    // short packet: error, mask untouched
+    req(d, ST_SET_FLASH); d[2] = 1;
+    assert(st_handle_hid(&s, d, 31, &ch) && d[1] == ST_ERR && !ch.flash_changed);
+    assert(s.flash_mask == 0x12345678u);
+
+    // the mask does not affect validity
+    s.flash_mask = 0;
+    assert(st_store_valid(&s));
 }
 
 static void test_bad_args(void) {
@@ -184,6 +219,7 @@ static void test_slider(void) {
 int main(void) {
     test_default();
     test_protocol();
+    test_flash();
     test_bad_args();
     test_count_resets_current();
     test_next_flash();

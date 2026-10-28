@@ -10,11 +10,18 @@
 #define ST_GET 0x02
 #define ST_SET 0x03
 #define ST_SET_COUNT 0x04
+#define ST_GET_FLASH 0x05
+#define ST_SET_FLASH 0x06
 #define ST_ERR 0xFF
-#define ST_PROTOCOL_VERSION 1
+#define ST_PROTOCOL_VERSION 2
 #define ST_MAX_TARGETS 8
 #define ST_NAME_MAX 12
 #define ST_FLASH_MS 1000
+
+// LEDs that flash by default (bit i = LED i); overridable per keymap.
+#ifndef ST_DEFAULT_FLASH_MASK
+#    define ST_DEFAULT_FLASH_MASK 0xFFFFFFFFu
+#endif
 
 // Raw ADC counts at the slider's two ends; see readme.md for calibration.
 #ifndef ST_ADC_MIN
@@ -40,10 +47,11 @@ typedef struct __attribute__((packed)) {
     uint8_t     count;   // 1-8
     uint8_t     current; // < count
     st_target_t targets[ST_MAX_TARGETS];
+    uint32_t    flash_mask; // bit i = LED i flashes on a target switch (little-endian in EEPROM)
 } st_store_t;
 
 _Static_assert(sizeof(st_target_t) == 16, "target is 16 bytes");
-_Static_assert(sizeof(st_store_t) == 130, "store is 130 bytes");
+_Static_assert(sizeof(st_store_t) == 134, "store is 134 bytes");
 
 typedef struct {
     uint16_t last_raw; // last raw reading that passed hysteresis
@@ -58,6 +66,7 @@ typedef struct {
     bool    store_changed;
     uint8_t first, count;
     bool    header_changed;
+    bool    flash_changed;
 } st_change_t;
 
 void    st_store_default(st_store_t *s);

@@ -2,6 +2,7 @@
 
 void st_store_default(st_store_t *s) {
     memset(s, 0, sizeof(*s));
+    s->flash_mask         = ST_DEFAULT_FLASH_MASK;
     s->count              = 1;
     s->current            = 0;
     s->targets[0].control = 62;
@@ -81,6 +82,17 @@ bool st_handle_hid(st_store_t *s, uint8_t *data, uint8_t length, st_change_t *ch
             change->header_changed = true;
             break;
         }
+        case ST_GET_FLASH:
+            data[2] = (uint8_t)(s->flash_mask);
+            data[3] = (uint8_t)(s->flash_mask >> 8);
+            data[4] = (uint8_t)(s->flash_mask >> 16);
+            data[5] = (uint8_t)(s->flash_mask >> 24);
+            break;
+        case ST_SET_FLASH:
+            s->flash_mask = (uint32_t)data[2] | ((uint32_t)data[3] << 8) | ((uint32_t)data[4] << 16) | ((uint32_t)data[5] << 24);
+            change->store_changed = true;
+            change->flash_changed = true;
+            break;
         default:
             data[1] = ST_ERR;
             break;
