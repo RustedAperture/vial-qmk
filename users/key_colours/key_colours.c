@@ -21,9 +21,8 @@ static kc_runtime_t kc_rt;
 // ---- EEPROM ----
 
 void eeconfig_init_user_datablock(void) {
-    kc_store_t blank;
-    kc_store_blank(&blank);
-    eeconfig_update_user_datablock(&blank, 0, sizeof blank);
+    kc_store_blank(&kc_store);
+    eeconfig_update_user_datablock(&kc_store, 0, sizeof kc_store);
 }
 
 static void kc_save_change(const kc_change_t *ch) {
@@ -117,7 +116,12 @@ void keyboard_post_init_user(void) {
     kc_runtime_init(&kc_rt);
     transaction_register_rpc(KEY_COLOURS_SYNC, kc_sync_slave_handler);
     if (is_keyboard_master()) {
-        if (eeconfig_is_user_datablock_valid()) eeconfig_read_user_datablock(&kc_store, 0, sizeof kc_store);
+        if (eeconfig_is_user_datablock_valid()) {
+            eeconfig_read_user_datablock(&kc_store, 0, sizeof kc_store);
+        } else {
+            // Safety net: write the blank store so stale EEPROM bytes never show as colours.
+            eeconfig_update_user_datablock(&kc_store, 0, sizeof kc_store);
+        }
         kc_mark_all_dirty(&kc_rt);
     }
 }

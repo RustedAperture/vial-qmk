@@ -19,5 +19,6 @@
 #define KEY_COLOURS_LAYERS 4
 #define KEY_COLOURS_LEDS 58
 #define EECONFIG_USER_DATA_SIZE 729          /* 1 + 4*8 + 4*58*3 */
-#define EECONFIG_USER_DATA_VERSION 0x4B430001 /* bump when the store format changes */
+/* Format version follows the counts; bump the high part (0x4B43xxxx) when kc_store_t changes */
+#define EECONFIG_USER_DATA_VERSION (0x4B430000 | (KEY_COLOURS_LAYERS << 8) | KEY_COLOURS_LEDS)
 #define SPLIT_TRANSACTION_IDS_USER KEY_COLOURS_SYNC
