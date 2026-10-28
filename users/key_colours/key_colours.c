@@ -1,19 +1,25 @@
-// QMK glue: EEPROM persistence, raw HID, split sync and rendering for key colours.
+// QMK glue: EEPROM persistence, raw HID, split sync (split keyboards only) and rendering for key colours.
+// Defines raw_hid_receive_kb, eeconfig_init_user_datablock, keyboard_post_init_user,
+// rgb_matrix_indicators_advanced_user, and housekeeping_task_user on split keyboards.
 #include QMK_KEYBOARD_H
 #include "via.h"
-#include "transactions.h"
-#include "split_util.h"
+#ifdef SPLIT_KEYBOARD
+#    include "transactions.h"
+#    include "split_util.h"
+#endif
 #include "key_colours.h"
 
 _Static_assert(sizeof(kc_store_t) == EECONFIG_USER_DATA_SIZE, "EECONFIG_USER_DATA_SIZE must match kc_store_t");
 _Static_assert(KEY_COLOURS_LAYERS == DYNAMIC_KEYMAP_LAYER_COUNT, "KEY_COLOURS_LAYERS must match DYNAMIC_KEYMAP_LAYER_COUNT");
 _Static_assert(KEY_COLOURS_LEDS == RGB_MATRIX_LED_COUNT, "KEY_COLOURS_LEDS must match RGB_MATRIX_LED_COUNT");
 
+#ifdef SPLIT_KEYBOARD
 #define KC_SYNC_INTERVAL_MS 10
 #define KC_SYNC_CHUNK 0
 #define KC_SYNC_PREVIEW 1
 #define KC_SYNC_HEADER 4
 _Static_assert(KC_SYNC_HEADER + KC_PER_PACKET * KC_ENTRY_SIZE <= RPC_M2S_BUFFER_SIZE, "sync chunk exceeds RPC buffer");
+#endif
 
 static kc_store_t   kc_store;
 static kc_runtime_t kc_rt;
@@ -46,6 +52,7 @@ void raw_hid_receive_kb(uint8_t *data, uint8_t length) {
 
 // ---- Split sync ----
 
+#ifdef SPLIT_KEYBOARD
 static void kc_sync_slave_handler(uint8_t in_len, const void *in, uint8_t out_len, void *out) {
     (void)out_len;
     (void)out;
@@ -108,13 +115,16 @@ static void kc_sync_master(void) {
     last_sync = timer_read32();
     if (!transaction_rpc_send(KEY_COLOURS_SYNC, KC_SYNC_HEADER + n, buf)) kc_mark_dirty(&kc_rt, layer, start, count);
 }
+#endif
 
 // ---- QMK hooks ----
 
 void keyboard_post_init_user(void) {
     kc_store_blank(&kc_store);
     kc_runtime_init(&kc_rt);
+#ifdef SPLIT_KEYBOARD
     transaction_register_rpc(KEY_COLOURS_SYNC, kc_sync_slave_handler);
+#endif
     if (is_keyboard_master()) {
         if (eeconfig_is_user_datablock_valid()) {
             eeconfig_read_user_datablock(&kc_store, 0, sizeof kc_store);
@@ -126,9 +136,11 @@ void keyboard_post_init_user(void) {
     }
 }
 
+#ifdef SPLIT_KEYBOARD
 void housekeeping_task_user(void) {
     if (is_keyboard_master()) kc_sync_master();
 }
+#endif
 
 bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     uint8_t layer = kc_display_layer(&kc_rt, get_highest_layer(layer_state | default_layer_state), timer_read32());

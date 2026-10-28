@@ -24,7 +24,8 @@ The app saves them in `.vil` layout files, so restoring a layout restores colour
 - `test/`: host tests for the core.
 
 ## Using it in a keymap
-Needs VIA/Vial and VialRGB (`VIALRGB_ENABLE = yes`). The keymap must not define the hooks listed above.
+Needs VIA/Vial and VialRGB (`VIALRGB_ENABLE = yes`). The keymap must not define the hooks listed above
+(`housekeeping_task_user` is only taken on split keyboards). Works on split and non-split keyboards.
 
 `rules.mk`:
 
