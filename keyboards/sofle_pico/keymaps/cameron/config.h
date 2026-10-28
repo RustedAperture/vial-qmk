@@ -14,3 +14,10 @@
 #define SPLIT_ACTIVITY_ENABLE
 #define SPLIT_MODS_ENABLE
 #define SPLIT_LED_STATE_ENABLE
+
+/* Per-key, per-layer colours (users/key_colours) */
+#define KEY_COLOURS_LAYERS 4
+#define KEY_COLOURS_LEDS 58
+#define EECONFIG_USER_DATA_SIZE 729          /* 1 + 4*8 + 4*58*3 */
+#define EECONFIG_USER_DATA_VERSION 0x4B430001 /* bump when the store format changes */
+#define SPLIT_TRANSACTION_IDS_USER KEY_COLOURS_SYNC
